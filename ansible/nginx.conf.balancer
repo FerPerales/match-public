@@ -1,0 +1,14 @@
+upstream backend {
+        ip_hash;
+        server 68.183.170.1;
+        server 68.183.175.149;
+}
+
+server {
+        listen 80;
+
+        location / {
+                proxy_pass http://backend;
+        }
+
+}
