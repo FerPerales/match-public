@@ -97,6 +97,16 @@ namespace :deploy do
     end
   end
 
+  desc 'setup: nginx restart' do
+    task :restart_nginx do
+      on roles(:app) do
+        sudo :mkdir, '-pv', "#{shared_path}/log"
+        sudo :rm, '-f', "#{fetch(:nginx_sites_enabled_path)}/default"
+        sudo :service, 'nginx restart'
+      end
+    end
+  end
+
   desc 'Make sure bundler is installer'
   task :bundle_install do
     on roles(:app) do
@@ -121,9 +131,10 @@ namespace :deploy do
   end
 
   # before :starting,     :check_revision
-  after  :finishing,    :compile_assets
-  after  :finishing,    :cleanup
-  after  :finishing,    :restart
+  after :finishing,    :compile_assets
+  after :finishing,    :cleanup
+  after :finishing,    :restart
+  after :restart,      :restart_nginx
   before 'bundler:install', 'deploy:bundle_install'
   before 'deploy:check:linked_files', 'deploy:copy_linked_master_key'
   before 'deploy:check:linked_files', 'deploy:copy_linked_database_yml'
