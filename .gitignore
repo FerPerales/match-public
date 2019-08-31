@@ -34,3 +34,5 @@ app/.DS_Store
 coverage
 
 /public/uploads
+
+/config/database.yml

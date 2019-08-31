@@ -1,7 +1,7 @@
 # Change these
 
 
-set :repo_url,        'git@github.com:hecbuma/match-public.git'
+set :repo_url,        'git@github.com:FerPerales/match-public.git'
 set :application,     'match-public'
 set :user,            'deploy'
 set :puma_threads,    [4, 16]
@@ -43,6 +43,7 @@ set :branch,        :develop
 # set :linked_files, %w{config/database.yml}
 # set :linked_dirs,  %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
 set :linked_files, fetch(:linked_files, []).push("config/master.key")
+set :linked_files, fetch(:linked_files, []).push("config/database.yml")
 append :linked_dirs, '.bundle'
 
 namespace :puma do
@@ -89,6 +90,15 @@ namespace :deploy do
     end
   end
 
+  desc "setup: copy config/database.yml to shared/config"
+  task :copy_linked_database_yml do
+    on roles(:app) do
+      puts ">>>>>>>>> database.yml"
+      sudo :mkdir, "-pv", shared_path
+      upload! "config/database.yml", "#{shared_path}/config/database.yml"
+    end
+  end
+
   desc "Make sure bundler is installer"
   task :bundle_install do
     on roles(:app) do
@@ -120,6 +130,7 @@ namespace :deploy do
   after  :finishing,    :restart
   before "bundler:install", "deploy:bundle_install"
   before "deploy:check:linked_files", "deploy:copy_linked_master_key"
+  before "deploy:check:linked_files", "deploy:copy_linked_database_yml"
 end
 
 # ps aux | grep puma    # Get puma pid
